@@ -528,10 +528,11 @@ function Library:CreateWindow(title)
         
 -- Add Toggle (Version Corrigée avec Sauvegarde)
 function TabManager:AddToggle(text, default, callback)
+    ensureSavedStates() -- s'assure que savedStates est une table
+
     local toggled = default or false
-    
-    -- Chargement de l'état sauvegardé si existe (intégration du système global)
-    if savedStates[text] ~= nil then
+
+    if type(savedStates[text]) == "boolean" then
         toggled = savedStates[text]
     end
     
@@ -581,21 +582,21 @@ function TabManager:AddToggle(text, default, callback)
     CircleCorner.CornerRadius = UDim.new(1, 0)
     CircleCorner.Parent = ToggleCircle
     
-    -- Événement de clic avec toggle et sauvegarde
     ToggleButton.MouseButton1Click:Connect(function()
         toggled = not toggled
-        
-        -- Animations fluides
+
+        -- animations (inchangées)
         Spring(ToggleButton, {BackgroundColor3 = toggled and Theme.Primary or Theme.Border}, 0.3)
         Spring(ToggleCircle, {Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)}, 0.3)
-        
-        -- Sauvegarde automatique de l'état
-        savedStates[text] = toggled
+
+        -- Sauvegarde automatique de l'état — safe assign
+        ensureSavedStates()
+        savedStates[tostring(text)] = toggled -- forcer la clé string pour consistance
         saveStates()
-        
-        -- Appel du callback avec gestion d'erreur
+
         pcall(callback, toggled)
     end)
+
     
     -- Effets hover sur le frame principal
     ToggleFrame.MouseEnter:Connect(function()
@@ -606,7 +607,7 @@ function TabManager:AddToggle(text, default, callback)
         Tween(ToggleFrame, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
     end)
     
-    return ToggleFrame
+   return ToggleFrame
 end
         
         -- Add Slider
