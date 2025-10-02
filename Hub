@@ -1,23 +1,22 @@
--- WoW Team Hub v6.0 - Ultra Modern UI
+-- WoW Team Hub v6.0 - Ultra Modern UI (FIXED)
 -- Design inspiré de: Glassmorphism, Neumorphism & Material Design 3
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Configuration des couleurs modernes
 local Theme = {
-    Primary = Color3.fromRGB(139, 92, 246), -- Purple vibrant
-    Secondary = Color3.fromRGB(236, 72, 153), -- Pink moderne
-    Accent = Color3.fromRGB(34, 211, 238), -- Cyan électrique
-    Success = Color3.fromRGB(16, 185, 129), -- Green moderne
+    Primary = Color3.fromRGB(139, 92, 246),
+    Secondary = Color3.fromRGB(236, 72, 153),
+    Accent = Color3.fromRGB(34, 211, 238),
+    Success = Color3.fromRGB(16, 185, 129),
     
-    Background = Color3.fromRGB(10, 10, 15), -- Très sombre
-    Surface = Color3.fromRGB(17, 17, 24), -- Surface sombre
-    SurfaceLight = Color3.fromRGB(24, 24, 32), -- Surface claire
+    Background = Color3.fromRGB(10, 10, 15),
+    Surface = Color3.fromRGB(17, 17, 24),
+    SurfaceLight = Color3.fromRGB(24, 24, 32),
     
     Text = Color3.fromRGB(240, 240, 245),
     TextSecondary = Color3.fromRGB(156, 163, 175),
@@ -25,18 +24,6 @@ local Theme = {
     
     Border = Color3.fromRGB(40, 40, 55),
     Hover = Color3.fromRGB(30, 30, 42),
-}
-
--- Icônes modernes
-local Icons = {
-    Home = "rbxassetid://10734950309",
-    Settings = "rbxassetid://10734950309",
-    User = "rbxassetid://10747372992",
-    Search = "rbxassetid://10734898355",
-    Plus = "rbxassetid://10747372992",
-    Check = "rbxassetid://10734896629",
-    X = "rbxassetid://10747384394",
-    ChevronDown = "rbxassetid://10734896206",
 }
 
 -- Utilitaires d'animation
@@ -55,37 +42,19 @@ local function Tween(obj, props, duration, style, direction)
 end
 
 local function Spring(obj, props, duration)
-    return Tween(obj, props, duration or 0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
+    return Tween(obj, props, duration or 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 end
 
--- Effet de particules (optionnel)
-local function CreateGlow(parent, size, color)
-    local glow = Instance.new("ImageLabel")
-    glow.Name = "Glow"
-    glow.Parent = parent
-    glow.BackgroundTransparency = 1
-    glow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    glow.AnchorPoint = Vector2.new(0.5, 0.5)
-    glow.Size = size or UDim2.new(1.5, 0, 1.5, 0)
-    glow.ZIndex = 0
-    glow.Image = "rbxassetid://5028857084"
-    glow.ImageColor3 = color or Theme.Primary
-    glow.ImageTransparency = 0.7
-    return glow
-end
-
--- Fonction de dragging améliorée
+-- Fonction de dragging
 local function MakeDraggable(frame, dragHandle)
-    local dragging, dragInput, dragStart, startPos
-    local velocity = Vector2.new(0, 0)
+    local dragging = false
+    local dragInput, dragStart, startPos
     
     dragHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
-            
-            Tween(frame, {Size = frame.Size + UDim2.new(0, 4, 0, 4)}, 0.1)
         end
     end)
     
@@ -98,7 +67,6 @@ local function MakeDraggable(frame, dragHandle)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
-            velocity = delta
             frame.Position = UDim2.new(
                 startPos.X.Scale,
                 startPos.X.Offset + delta.X,
@@ -111,7 +79,6 @@ local function MakeDraggable(frame, dragHandle)
     dragHandle.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
-            Tween(frame, {Size = frame.Size - UDim2.new(0, 4, 0, 4)}, 0.2)
         end
     end)
 end
@@ -129,12 +96,7 @@ function Library:CreateWindow(title)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
     
-    -- Blur effet de fond (optionnel)
-    local BlurEffect = Instance.new("BlurEffect")
-    BlurEffect.Size = 0
-    BlurEffect.Parent = game:GetService("Lighting")
-    
-    -- Container principal avec glassmorphism
+    -- Container principal
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
@@ -147,33 +109,20 @@ function Library:CreateWindow(title)
     
     -- Animation d'ouverture
     Spring(MainFrame, {Size = UDim2.new(0, 600, 0, 450)}, 0.6)
-    Tween(BlurEffect, {Size = 10}, 0.4)
     
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 20)
     MainCorner.Parent = MainFrame
     
-    -- Bordure lumineuse animée
-    local BorderGradient = Instance.new("UIStroke")
-    BorderGradient.Parent = MainFrame
-    BorderGradient.Color = Theme.Primary
-    BorderGradient.Thickness = 2
-    BorderGradient.Transparency = 0.5
-    BorderGradient.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    -- Bordure
+    local BorderStroke = Instance.new("UIStroke")
+    BorderStroke.Parent = MainFrame
+    BorderStroke.Color = Theme.Primary
+    BorderStroke.Thickness = 2
+    BorderStroke.Transparency = 0.5
+    BorderStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     
-    -- Animation de la bordure
-    spawn(function()
-        while MainFrame.Parent do
-            Tween(BorderGradient, {Color = Theme.Secondary}, 2)
-            wait(2)
-            Tween(BorderGradient, {Color = Theme.Accent}, 2)
-            wait(2)
-            Tween(BorderGradient, {Color = Theme.Primary}, 2)
-            wait(2)
-        end
-    end)
-    
-    -- Effet de profondeur
+    -- Shadow
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
     Shadow.Parent = MainFrame
@@ -184,10 +133,8 @@ function Library:CreateWindow(title)
     Shadow.Image = "rbxassetid://5028857084"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
     Shadow.ImageTransparency = 0.3
-    Shadow.ScaleType = Enum.ScaleType.Slice
-    Shadow.SliceCenter = Rect.new(24, 24, 276, 276)
     
-    -- Barre supérieure moderne
+    -- Barre supérieure
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Parent = MainFrame
@@ -200,7 +147,6 @@ function Library:CreateWindow(title)
     TopBarCorner.CornerRadius = UDim.new(0, 20)
     TopBarCorner.Parent = TopBar
     
-    -- Gradient subtil
     local TopBarGradient = Instance.new("UIGradient")
     TopBarGradient.Parent = TopBar
     TopBarGradient.Color = ColorSequence.new{
@@ -209,7 +155,7 @@ function Library:CreateWindow(title)
     }
     TopBarGradient.Rotation = 90
     
-    -- Logo/Icône animée
+    -- Logo
     local LogoContainer = Instance.new("Frame")
     LogoContainer.Name = "LogoContainer"
     LogoContainer.Parent = TopBar
@@ -222,23 +168,6 @@ function Library:CreateWindow(title)
     LogoCorner.CornerRadius = UDim.new(0, 10)
     LogoCorner.Parent = LogoContainer
     
-    local LogoGradient = Instance.new("UIGradient")
-    LogoGradient.Parent = LogoContainer
-    LogoGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Theme.Primary),
-        ColorSequenceKeypoint.new(1, Theme.Secondary)
-    }
-    LogoGradient.Rotation = 45
-    
-    -- Animation rotation du logo
-    spawn(function()
-        while LogoContainer.Parent do
-            Tween(LogoGradient, {Rotation = 405}, 3, Enum.EasingStyle.Linear)
-            wait(3)
-            LogoGradient.Rotation = 45
-        end
-    end)
-    
     local LogoText = Instance.new("TextLabel")
     LogoText.Parent = LogoContainer
     LogoText.BackgroundTransparency = 1
@@ -248,7 +177,7 @@ function Library:CreateWindow(title)
     LogoText.TextColor3 = Color3.fromRGB(255, 255, 255)
     LogoText.TextSize = 20
     
-    -- Titre avec effet
+    -- Titre
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "Title"
     TitleLabel.Parent = TopBar
@@ -261,15 +190,7 @@ function Library:CreateWindow(title)
     TitleLabel.TextSize = 18
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    local TitleGradient = Instance.new("UIGradient")
-    TitleGradient.Parent = TitleLabel
-    TitleGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Theme.Text),
-        ColorSequenceKeypoint.new(0.5, Theme.Primary),
-        ColorSequenceKeypoint.new(1, Theme.Text)
-    }
-    
-    -- Version badge
+    -- Version
     local VersionBadge = Instance.new("Frame")
     VersionBadge.Parent = TopBar
     VersionBadge.BackgroundColor3 = Theme.Primary
@@ -290,7 +211,7 @@ function Library:CreateWindow(title)
     VersionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     VersionLabel.TextSize = 10
     
-    -- Boutons modernes (Minimize, Close)
+    -- Boutons (Container)
     local ButtonContainer = Instance.new("Frame")
     ButtonContainer.Parent = TopBar
     ButtonContainer.BackgroundTransparency = 1
@@ -337,14 +258,14 @@ function Library:CreateWindow(title)
     CloseCorner.CornerRadius = UDim.new(0, 8)
     CloseCorner.Parent = CloseBtn
     
-    -- Container principal avec onglets
+    -- Content Wrapper
     local ContentWrapper = Instance.new("Frame")
     ContentWrapper.Parent = MainFrame
     ContentWrapper.BackgroundTransparency = 1
     ContentWrapper.Position = UDim2.new(0, 0, 0, 60)
     ContentWrapper.Size = UDim2.new(1, 0, 1, -60)
     
-    -- Sidebar moderne pour les onglets
+    -- Sidebar
     local Sidebar = Instance.new("ScrollingFrame")
     Sidebar.Name = "Sidebar"
     Sidebar.Parent = ContentWrapper
@@ -367,6 +288,10 @@ function Library:CreateWindow(title)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Padding = UDim.new(0, 6)
     
+    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Sidebar.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y + 24)
+    end)
+    
     local TabPadding = Instance.new("UIPadding")
     TabPadding.Parent = Sidebar
     TabPadding.PaddingTop = UDim.new(0, 12)
@@ -374,7 +299,7 @@ function Library:CreateWindow(title)
     TabPadding.PaddingRight = UDim.new(0, 8)
     TabPadding.PaddingBottom = UDim.new(0, 12)
     
-    -- Zone de contenu
+    -- Content Container
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Parent = ContentWrapper
@@ -388,61 +313,53 @@ function Library:CreateWindow(title)
     ContentCorner.CornerRadius = UDim.new(0, 12)
     ContentCorner.Parent = ContentContainer
     
-    -- Fonctionnalités Minimize/Close
+    -- Minimize/Close Logic
     local minimized = false
-    local originalSize = MainFrame.Size
+    local originalSize = UDim2.new(0, 600, 0, 450)
     
     MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
             Spring(MainFrame, {Size = UDim2.new(0, 600, 0, 60)}, 0.4)
             MinimizeBtn.Text = "□"
-            Tween(BlurEffect, {Size = 0}, 0.3)
         else
             Spring(MainFrame, {Size = originalSize}, 0.4)
             MinimizeBtn.Text = "−"
-            Tween(BlurEffect, {Size = 10}, 0.3)
         end
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
         Spring(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.4)
-        Tween(BlurEffect, {Size = 0}, 0.3)
         wait(0.4)
         ScreenGui:Destroy()
-        BlurEffect:Destroy()
     end)
     
-    -- Effets hover
+    -- Hover Effects
     MinimizeBtn.MouseEnter:Connect(function()
         Tween(MinimizeBtn, {BackgroundColor3 = Theme.Hover}, 0.2)
-        Spring(MinimizeBtn, {Size = UDim2.new(0, 32, 0, 32)}, 0.2)
     end)
     
     MinimizeBtn.MouseLeave:Connect(function()
         Tween(MinimizeBtn, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
-        Spring(MinimizeBtn, {Size = UDim2.new(0, 30, 0, 30)}, 0.2)
     end)
     
     CloseBtn.MouseEnter:Connect(function()
         Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(248, 113, 113)}, 0.2)
-        Spring(CloseBtn, {Size = UDim2.new(0, 32, 0, 32)}, 0.2)
     end)
     
     CloseBtn.MouseLeave:Connect(function()
         Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(239, 68, 68)}, 0.2)
-        Spring(CloseBtn, {Size = UDim2.new(0, 30, 0, 30)}, 0.2)
     end)
     
     -- Dragging
     MakeDraggable(MainFrame, TopBar)
     
-    -- Fonction CreateTab
+    -- CreateTab Function
     function WindowManager:CreateTab(name, icon)
         local TabManager = {}
         TabManager.Elements = {}
         
-        -- Bouton d'onglet moderne
+        -- Tab Button
         local TabButton = Instance.new("TextButton")
         TabButton.Name = name
         TabButton.Parent = Sidebar
@@ -460,7 +377,7 @@ function Library:CreateWindow(title)
         TabCorner.CornerRadius = UDim.new(0, 10)
         TabCorner.Parent = TabButton
         
-        -- Indicateur actif
+        -- Active Indicator
         local ActiveIndicator = Instance.new("Frame")
         ActiveIndicator.Name = "ActiveIndicator"
         ActiveIndicator.Parent = TabButton
@@ -473,7 +390,7 @@ function Library:CreateWindow(title)
         IndicatorCorner.CornerRadius = UDim.new(0, 10)
         IndicatorCorner.Parent = ActiveIndicator
         
-        -- Contenu de l'onglet
+        -- Tab Content
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Name = name .. "Content"
         TabContent.Parent = ContentContainer
@@ -502,12 +419,15 @@ function Library:CreateWindow(title)
         ContentPadding.PaddingRight = UDim.new(0, 15)
         ContentPadding.PaddingBottom = UDim.new(0, 15)
         
-        -- Sélection d'onglet
+        -- Tab Selection
         TabButton.MouseButton1Click:Connect(function()
             for _, tab in pairs(WindowManager.Tabs) do
                 Tween(tab.Button, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
                 Tween(tab.Button, {TextColor3 = Theme.TextSecondary}, 0.2)
-                Tween(tab.Button:FindFirstChild("ActiveIndicator"), {Size = UDim2.new(0, 0, 1, 0)}, 0.3)
+                local indicator = tab.Button:FindFirstChild("ActiveIndicator")
+                if indicator then
+                    Tween(indicator, {Size = UDim2.new(0, 0, 1, 0)}, 0.3)
+                end
                 tab.Content.Visible = false
             end
             
@@ -533,7 +453,7 @@ function Library:CreateWindow(title)
         
         table.insert(WindowManager.Tabs, {Button = TabButton, Content = TabContent, Manager = TabManager})
         
-        -- Auto-select premier onglet
+        -- Auto-select first tab
         if #WindowManager.Tabs == 1 then
             Tween(TabButton, {BackgroundColor3 = Theme.Hover}, 0.2)
             Tween(TabButton, {TextColor3 = Theme.Primary}, 0.2)
@@ -541,8 +461,6 @@ function Library:CreateWindow(title)
             TabContent.Visible = true
             WindowManager.CurrentTab = TabManager
         end
-        
-        -- ÉLÉMENTS UI MODERNES
         
         -- Add Button
         function TabManager:AddButton(text, callback)
@@ -562,20 +480,10 @@ function Library:CreateWindow(title)
             BtnCorner.CornerRadius = UDim.new(0, 10)
             BtnCorner.Parent = Button
             
-            local BtnGradient = Instance.new("UIGradient")
-            BtnGradient.Parent = Button
-            BtnGradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Theme.SurfaceLight),
-                ColorSequenceKeypoint.new(1, Theme.Hover)
-            }
-            BtnGradient.Rotation = 90
-            
             Button.MouseButton1Click:Connect(function()
                 pcall(callback)
-                Spring(Button, {Size = UDim2.new(1, 0, 0, 48)}, 0.1)
                 Tween(Button, {BackgroundColor3 = Theme.Primary}, 0.1)
                 wait(0.15)
-                Spring(Button, {Size = UDim2.new(1, 0, 0, 44)}, 0.1)
                 Tween(Button, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
             end)
             
@@ -590,7 +498,7 @@ function Library:CreateWindow(title)
             return Button
         end
         
-        -- Add Toggle (moderne)
+        -- Add Toggle
         function TabManager:AddToggle(text, default, callback)
             local toggled = default or false
             
@@ -640,17 +548,6 @@ function Library:CreateWindow(title)
             CircleCorner.CornerRadius = UDim.new(1, 0)
             CircleCorner.Parent = ToggleCircle
             
-            -- Ombre du cercle
-            local CircleShadow = Instance.new("ImageLabel")
-            CircleShadow.Parent = ToggleCircle
-            CircleShadow.BackgroundTransparency = 1
-            CircleShadow.Position = UDim2.new(0, -4, 0, -4)
-            CircleShadow.Size = UDim2.new(1, 8, 1, 8)
-            CircleShadow.ZIndex = 0
-            CircleShadow.Image = "rbxassetid://5028857084"
-            CircleShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-            CircleShadow.ImageTransparency = 0.7
-            
             ToggleButton.MouseButton1Click:Connect(function()
                 toggled = not toggled
                 
@@ -671,7 +568,7 @@ function Library:CreateWindow(title)
             return ToggleFrame
         end
         
-        -- Add Slider (moderne avec gradient)
+        -- Add Slider
         function TabManager:AddSlider(text, min, max, default, callback)
             local value = default or min
             
@@ -729,15 +626,6 @@ function Library:CreateWindow(title)
             FillCorner.CornerRadius = UDim.new(1, 0)
             FillCorner.Parent = SliderFill
             
-            -- Gradient animé
-            local FillGradient = Instance.new("UIGradient")
-            FillGradient.Parent = SliderFill
-            FillGradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Theme.Primary),
-                ColorSequenceKeypoint.new(0.5, Theme.Secondary),
-                ColorSequenceKeypoint.new(1, Theme.Accent)
-            }
-            
             local SliderButton = Instance.new("Frame")
             SliderButton.Parent = SliderBar
             SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -749,9 +637,6 @@ function Library:CreateWindow(title)
             BtnCorner.CornerRadius = UDim.new(1, 0)
             BtnCorner.Parent = SliderButton
             
-            -- Effet glow sur le bouton
-            local BtnGlow = CreateGlow(SliderButton, UDim2.new(2, 0, 2, 0), Theme.Primary)
-            
             local SliderInput = Instance.new("TextButton")
             SliderInput.Parent = SliderBar
             SliderInput.BackgroundTransparency = 1
@@ -762,13 +647,11 @@ function Library:CreateWindow(title)
             
             SliderInput.MouseButton1Down:Connect(function()
                 dragging = true
-                Spring(SliderButton, {Size = UDim2.new(0, 24, 0, 24)}, 0.2)
             end)
             
             UserInputService.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = false
-                    Spring(SliderButton, {Size = UDim2.new(0, 20, 0, 20)}, 0.2)
                 end
             end)
             
@@ -796,7 +679,7 @@ function Library:CreateWindow(title)
             return SliderFrame
         end
         
-        -- Add Dropdown (moderne)
+        -- Add Dropdown
         function TabManager:AddDropdown(text, options, callback)
             local selected = options[1] or "None"
             local opened = false
@@ -914,22 +797,10 @@ function Library:CreateWindow(title)
                 end
             end)
             
-            DropdownFrame.MouseEnter:Connect(function()
-                if not opened then
-                    Tween(DropdownFrame, {BackgroundColor3 = Theme.Hover}, 0.2)
-                end
-            end)
-            
-            DropdownFrame.MouseLeave:Connect(function()
-                if not opened then
-                    Tween(DropdownFrame, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
-                end
-            end)
-            
             return DropdownFrame
         end
         
-        -- Add Label (moderne)
+        -- Add Label
         function TabManager:AddLabel(text)
             local Label = Instance.new("TextLabel")
             Label.Parent = TabContent
@@ -941,17 +812,10 @@ function Library:CreateWindow(title)
             Label.TextSize = 16
             Label.TextXAlignment = Enum.TextXAlignment.Left
             
-            local LabelGradient = Instance.new("UIGradient")
-            LabelGradient.Parent = Label
-            LabelGradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Theme.Primary),
-                ColorSequenceKeypoint.new(1, Theme.Secondary)
-            }
-            
             return Label
         end
         
-        -- Add Paragraph (carte moderne)
+        -- Add Paragraph
         function TabManager:AddParagraph(title, content)
             local ParagraphFrame = Instance.new("Frame")
             ParagraphFrame.Name = title
@@ -964,7 +828,6 @@ function Library:CreateWindow(title)
             ParaCorner.CornerRadius = UDim.new(0, 10)
             ParaCorner.Parent = ParagraphFrame
             
-            -- Accent coloré sur le côté
             local AccentBar = Instance.new("Frame")
             AccentBar.Parent = ParagraphFrame
             AccentBar.BackgroundColor3 = Theme.Primary
@@ -974,14 +837,6 @@ function Library:CreateWindow(title)
             local AccentCorner = Instance.new("UICorner")
             AccentCorner.CornerRadius = UDim.new(0, 10)
             AccentCorner.Parent = AccentBar
-            
-            local AccentGradient = Instance.new("UIGradient")
-            AccentGradient.Parent = AccentBar
-            AccentGradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Theme.Primary),
-                ColorSequenceKeypoint.new(1, Theme.Secondary)
-            }
-            AccentGradient.Rotation = 90
             
             local Title = Instance.new("TextLabel")
             Title.Parent = ParagraphFrame
@@ -1018,7 +873,7 @@ function Library:CreateWindow(title)
             return ParagraphFrame
         end
         
-        -- Add Input (moderne)
+        -- Add Input
         function TabManager:AddInput(text, placeholder, callback)
             local InputFrame = Instance.new("Frame")
             InputFrame.Name = text
@@ -1094,7 +949,7 @@ function Library:CreateWindow(title)
             return InputFrame
         end
         
-        -- Add Keybind (ultra moderne)
+        -- Add Keybind
         function TabManager:AddKeybind(text, defaultKey, callback)
             local currentKey = defaultKey or Enum.KeyCode.E
             local waitingForKey = false
@@ -1137,18 +992,9 @@ function Library:CreateWindow(title)
             KeyBtnCorner.CornerRadius = UDim.new(0, 8)
             KeyBtnCorner.Parent = KeyButton
             
-            local KeyGradient = Instance.new("UIGradient")
-            KeyGradient.Parent = KeyButton
-            KeyGradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Theme.Primary),
-                ColorSequenceKeypoint.new(1, Theme.Secondary)
-            }
-            KeyGradient.Rotation = 45
-            
             KeyButton.MouseButton1Click:Connect(function()
                 waitingForKey = true
-                KeyButton.Text = "Press a key..."
-                Spring(KeyButton, {Size = UDim2.new(0, 100, 0, 36)}, 0.2)
+                KeyButton.Text = "..."
             end)
             
             UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1156,12 +1002,10 @@ function Library:CreateWindow(title)
                     currentKey = input.KeyCode
                     KeyButton.Text = currentKey.Name
                     waitingForKey = false
-                    Spring(KeyButton, {Size = UDim2.new(0, 95, 0, 32)}, 0.2)
                 end
                 
                 if not gameProcessed and input.KeyCode == currentKey then
                     pcall(callback)
-                    -- Effet visuel rapide
                     Tween(KeyButton, {BackgroundColor3 = Theme.Success}, 0.1)
                     wait(0.1)
                     Tween(KeyButton, {BackgroundColor3 = Theme.Primary}, 0.2)
@@ -1188,381 +1032,46 @@ end
 return Library
 
 --[[
-╔════════════════════════════════════════════════════════════════╗
-║              WoW TEAM HUB V6.0 - ULTRA MODERN UI              ║
-║                    EXEMPLE D'UTILISATION                       ║
-╚════════════════════════════════════════════════════════════════╝
+═══════════════════════════════════════════════════════════════
+                    EXEMPLE D'UTILISATION
+═══════════════════════════════════════════════════════════════
 
 local Library = loadstring(game:HttpGet("URL_DU_SCRIPT"))()
 local Window = Library:CreateWindow("WoW Team Hub v6.0")
 
 -- Créer des onglets
-local MainTab = Window:CreateTab("Main", "home")
-local PlayerTab = Window:CreateTab("Player", "user")
-local CombatTab = Window:CreateTab("Combat", "sword")
-local SettingsTab = Window:CreateTab("Settings", "settings")
-
--- ═══════════════════════════════════════
--- ONGLET COMBAT
--- ═══════════════════════════════════════
-
-CombatTab:AddLabel("⚔️ Paramètres de Combat")
-
-CombatTab:AddToggle("Auto Attack", false, function(state)
-    print("Auto Attack:", state)
-    _G.AutoAttack = state
-end)
-
-CombatTab:AddToggle("Aimbot", false, function(state)
-    print("Aimbot:", state)
-    _G.Aimbot = state
-end)
-
-CombatTab:AddSlider("Attack Range", 10, 100, 20, function(value)
-    _G.AttackRange = value
-    print("Range:", value)
-end)
-
-CombatTab:AddDropdown("Target Priority", {"Nearest", "Lowest HP", "Highest HP", "Random"}, function(selected)
-    print("Priority:", selected)
-    _G.TargetPriority = selected
-end)
-
-CombatTab:AddKeybind("Toggle Combat Mode", Enum.KeyCode.C, function()
-    print("Combat Mode toggled!")
-end)
-
--- ═══════════════════════════════════════
--- ONGLET SETTINGS
--- ═══════════════════════════════════════
-
-SettingsTab:AddLabel("⚙️ Configuration")
-
-SettingsTab:AddParagraph("📌 À propos", "WoW Team Hub v6.0 - Interface ultra-moderne avec animations fluides et design glassmorphism. Créé avec passion!")
-
-SettingsTab:AddToggle("Show Notifications", true, function(state)
-    _G.ShowNotifications = state
-end)
-
-SettingsTab:AddDropdown("Theme", {"Purple", "Blue", "Green", "Red", "Orange"}, function(selected)
-    print("Theme changed to:", selected)
-    -- Vous pouvez ajouter un système de thème ici
-end)
-
-SettingsTab:AddButton("Reset Settings", function()
-    print("Settings reset!")
-end)
-
-SettingsTab:AddButton("Destroy UI", function()
-    game.CoreGui.WoWTeamHubV6:Destroy()
-end)
-
-SettingsTab:AddKeybind("Toggle UI", Enum.KeyCode.RightShift, function()
-    local gui = game.CoreGui.WoWTeamHubV6
-    gui.Enabled = not gui.Enabled
-end)
-
---[[
-╔════════════════════════════════════════════════════════════════╗
-║                      FONCTIONNALITÉS V6.0                      ║
-╚════════════════════════════════════════════════════════════════╝
-
-✨ DESIGN ULTRA-MODERNE:
-   • Glassmorphism & Neumorphism
-   • Animations fluides et élastiques
-   • Gradient animés multicolores
-   • Bordures lumineuses RGB
-   • Effets de profondeur (shadows & glows)
-
-🎨 ÉLÉMENTS UI DISPONIBLES:
-   • AddButton()      - Boutons interactifs
-   • AddToggle()      - Switches modernes
-   • AddSlider()      - Sliders avec gradients
-   • AddDropdown()    - Menus déroulants animés
-   • AddLabel()       - Titres de section
-   • AddParagraph()   - Cartes d'information
-   • AddInput()       - Champs de saisie
-   • AddKeybind()     - Configuration des touches
-
-🚀 ANIMATIONS:
-   • Spring animations (effet rebond)
-   • Smooth transitions
-   • Hover effects
-   • Click feedback
-   • Color morphing
-
-💡 OPTIMISATIONS:
-   • Code ultra-optimisé
-   • Pas de lag
-   • Faible consommation mémoire
-   • Compatible tous devices
-
-🎯 UTILISATION:
-   1. Chargez le script
-   2. Créez une fenêtre avec CreateWindow()
-   3. Ajoutez des onglets avec CreateTab()
-   4. Ajoutez des éléments dans chaque onglet
-   5. Profitez de l'interface !
-
-═══════════════════════════════════════════════════════════════
-
-💜 CRÉÉ PAR WOW TEAM
-🌟 VERSION 6.0 - ULTRA MODERN EDITION
-⚡ PROPULSÉ PAR LUCIDE ICONS & MODERN DESIGN
-
-═══════════════════════════════════════════════════════════════
-]]
-
---[[
-╔════════════════════════════════════════════════════════════════╗
-║                    EXEMPLES AVANCÉS                            ║
-╚════════════════════════════════════════════════════════════════╝
-
--- EXEMPLE 1: Créer plusieurs onglets avec toutes les fonctionnalités
-local Library = loadstring(game:HttpGet("URL"))()
-local Window = Library:CreateWindow("Mon Hub Ultime")
-
-local Tab1 = Window:CreateTab("Home")
-local Tab2 = Window:CreateTab("Features")
-local Tab3 = Window:CreateTab("Misc")
-
--- EXEMPLE 2: Toggle avec callback complexe
-Tab1:AddToggle("ESP Players", false, function(enabled)
-    if enabled then
-        -- Activer ESP
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                -- Créer ESP box
-            end
-        end
-    else
-        -- Désactiver ESP
-    end
-end)
-
--- EXEMPLE 3: Slider pour modifications dynamiques
-Tab1:AddSlider("FOV", 70, 120, 70, function(value)
-    game.Workspace.Camera.FieldOfView = value
-end)
-
--- EXEMPLE 4: Dropdown pour sélection d'équipe
-Tab1:AddDropdown("Select Team", {"Red Team", "Blue Team", "Green Team"}, function(team)
-    -- Changer d'équipe
-    game.Players.LocalPlayer.Team = game.Teams:FindFirstChild(team)
-end)
-
--- EXEMPLE 5: Input pour recherche de joueur
-Tab2:AddInput("Find Player", "Enter username...", function(username)
-    local player = game.Players:FindFirstChild(username)
-    if player then
-        print("Player found:", player.Name)
-    else
-        print("Player not found")
-    end
-end)
-
--- EXEMPLE 6: Keybind pour fonction rapide
-Tab3:AddKeybind("Fly Toggle", Enum.KeyCode.F, function()
-    -- Toggle fly
-    _G.FlyEnabled = not _G.FlyEnabled
-    print("Fly:", _G.FlyEnabled)
-end)
-
--- EXEMPLE 7: Paragraph pour instructions
-Tab3:AddParagraph("How to Use", 
-    "1. Select your desired features\n" ..
-    "2. Configure settings with sliders\n" ..
-    "3. Use keybinds for quick access\n" ..
-    "4. Enjoy your enhanced experience!"
-)
-
--- EXEMPLE 8: Multiples boutons pour actions
-Tab2:AddButton("Teleport to Spawn", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = 
-        game.Workspace.SpawnLocation.CFrame
-end)
-
-Tab2:AddButton("Full Heal", function()
-    game.Players.LocalPlayer.Character.Humanoid.Health = 
-        game.Players.LocalPlayer.Character.Humanoid.MaxHealth
-end)
-
-Tab2:AddButton("Reset Character", function()
-    game.Players.LocalPlayer.Character.Humanoid.Health = 0
-end)
-
--- EXEMPLE 9: Combinaison toggle + slider
-local speedEnabled = false
-local speedValue = 16
-
-Tab1:AddToggle("Speed Hack", false, function(state)
-    speedEnabled = state
-    if state then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speedValue
-    else
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
-    end
-end)
-
-Tab1:AddSlider("Speed Amount", 16, 500, 16, function(value)
-    speedValue = value
-    if speedEnabled then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-end)
-
--- EXEMPLE 10: Système de configuration sauvegardée
-local Config = {
-    Speed = 16,
-    JumpPower = 50,
-    FOV = 70,
-    Team = "Red Team"
-}
-
-Tab3:AddButton("Save Config", function()
-    writefile("MyHubConfig.json", game:GetService("HttpService"):JSONEncode(Config))
-    print("Configuration saved!")
-end)
-
-Tab3:AddButton("Load Config", function()
-    if isfile("MyHubConfig.json") then
-        Config = game:GetService("HttpService"):JSONDecode(readfile("MyHubConfig.json"))
-        print("Configuration loaded!")
-        -- Appliquer la config
-    end
-end)
-
-═══════════════════════════════════════════════════════════════
-
-🎨 PERSONNALISATION DES COULEURS:
-   
-   Pour modifier le thème, changez les valeurs dans la table Theme:
-   
-   Theme.Primary = Color3.fromRGB(139, 92, 246)    -- Violet
-   Theme.Secondary = Color3.fromRGB(236, 72, 153)  -- Rose
-   Theme.Accent = Color3.fromRGB(34, 211, 238)     -- Cyan
-   
-   Thèmes prédéfinis:
-   • Purple Dream (par défaut)
-   • Ocean Blue: Primary = RGB(59, 130, 246)
-   • Forest Green: Primary = RGB(16, 185, 129)
-   • Sunset Orange: Primary = RGB(251, 146, 60)
-   • Blood Red: Primary = RGB(239, 68, 68)
-
-═══════════════════════════════════════════════════════════════
-
-⚡ ASTUCES & CONSEILS:
-
-1. Pour une meilleure organisation, créez des labels pour séparer
-   les sections dans vos onglets
-
-2. Utilisez AddParagraph pour donner des instructions claires
-   à vos utilisateurs
-
-3. Les keybinds sont parfaits pour les fonctions qu'on utilise
-   souvent (fly, noclip, esp, etc.)
-
-4. Combinez toggles et sliders pour un contrôle précis
-
-5. Les dropdowns sont idéaux pour les sélections avec plusieurs
-   options (teams, armes, modes, etc.)
-
-6. N'oubliez pas d'ajouter un bouton "Destroy UI" dans Settings
-   pour permettre aux utilisateurs de fermer proprement
-
-7. Testez toujours vos callbacks pour éviter les erreurs
-
-8. Utilisez pcall() dans vos callbacks pour éviter que l'UI
-   crash en cas d'erreur
-
-═══════════════════════════════════════════════════════════════
-
-📱 COMPATIBILITÉ:
-
-✅ PC / Desktop
-✅ Mobile (tactile optimisé)
-✅ Tablette
-✅ Tous les executors majeurs
-✅ Synapse X, Script-Ware, KRNL, Fluxus, etc.
-
-═══════════════════════════════════════════════════════════════
-
-🔥 NOUVEAUTÉS V6.0:
-
-• Design glassmorphism moderne
-• Animations élastiques (spring)
-• Bordures RGB animées
-• Gradients multicolores
-• Effets glow et shadow
-• Optimisation performances
-• Code restructuré et clean
-• Meilleure compatibilité mobile
-• Transitions ultra-smooth
-• Interface responsive
-• Hover effects améliorés
-• Click feedback visuel
-• Logo animé avec rotation
-• Version badge stylisé
-• Sidebar moderne
-• Content cards élégantes
-• Input fields avec focus effect
-• Dropdown avec chevron animé
-• Keybind buttons avec gradient
-• Toggle switches fluides
-• Sliders avec fill gradient
-• Paragraph avec accent bar
-• Labels avec text gradient
-
-═══════════════════════════════════════════════════════════════
-
-💎 WOW TEAM HUB V6.0 - LA MEILLEURE UI MODERNE POUR ROBLOX
-🌟 Design professionnel de qualité premium
-⚡ Performances optimales
-🎨 Personnalisable à l'infini
-🚀 Facile à utiliser
-
-Merci d'utiliser WoW Team Hub! ❤️
-
-═══════════════════════════════════════════════════════════════
-]]══════════════════════════════════════
--- ONGLET MAIN
--- ═══════════════════════════════════════
-
+local MainTab = Window:CreateTab("Main")
+local PlayerTab = Window:CreateTab("Player")
+local SettingsTab = Window:CreateTab("Settings")
+
+-- Ajouter des éléments
 MainTab:AddLabel("🎮 Actions Principales")
 
-MainTab:AddButton("Kill All Enemies", function()
+MainTab:AddButton("Kill All", function()
     print("Kill All activé!")
-    -- Votre code ici
 end)
 
 MainTab:AddToggle("Auto Farm", false, function(state)
     print("Auto Farm:", state)
-    _G.AutoFarm = state
 end)
 
-MainTab:AddParagraph("ℹ️ Information", "Cette fonction permet d'automatiser le farming. Activez-la pour gagner de l'XP automatiquement!")
-
--- ═══════════════════════════════════════
--- ONGLET PLAYER
--- ═══════════════════════════════════════
-
-PlayerTab:AddLabel("👤 Modifications Joueur")
-
-PlayerTab:AddSlider("Walk Speed", 16, 200, 16, function(value)
+MainTab:AddSlider("Walk Speed", 16, 200, 16, function(value)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
 end)
 
-PlayerTab:AddSlider("Jump Power", 50, 300, 50, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+MainTab:AddDropdown("Team", {"Red", "Blue", "Green"}, function(selected)
+    print("Team:", selected)
 end)
 
-PlayerTab:AddToggle("Infinite Jump", false, function(state)
-    _G.InfiniteJump = state
+PlayerTab:AddInput("Username", "Entrez un nom...", function(text)
+    print("Username:", text)
 end)
 
-PlayerTab:AddInput("Teleport to Player", "Username...", function(text)
-    print("Téléportation vers:", text)
-    -- Code de téléportation
+PlayerTab:AddKeybind("Toggle UI", Enum.KeyCode.RightShift, function()
+    print("UI Toggle!")
 end)
 
--- ═
+SettingsTab:AddParagraph("À propos", "WoW Team Hub v6.0 - Interface ultra-moderne!")
+
+═══════════════════════════════════════════════════════════════
+]]
