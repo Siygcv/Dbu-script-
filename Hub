@@ -201,14 +201,13 @@ function Library:CreateWindow(title)
     LogoCorner.CornerRadius = UDim.new(0, 10)
     LogoCorner.Parent = LogoContainer
     
-    local LogoText = Instance.new("TextLabel")
-    LogoText.Parent = LogoContainer
-    LogoText.BackgroundTransparency = 1
-    LogoText.Size = UDim2.new(1, 0, 1, 0)
-    LogoText.Font = Enum.Font.GothamBold
-    LogoText.Text = "W"
-    LogoText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LogoText.TextSize = 20
+    local LogoImage = Instance.new("ImageLabel")
+    LogoImage.Parent = LogoContainer
+    LogoImage.BackgroundTransparency = 1
+    LogoImage.Size = UDim2.new(1, 0, 1, 0)
+    LogoImage.Image = "rbxassetid://86138221220091"  -- Remplace ceci par l'ID de ton image Roblox
+    LogoImage.ScaleType = Enum.ScaleType.Fit       -- Pour que l'image garde ses proportions
+
     
     -- Titre
     local TitleLabel = Instance.new("TextLabel")
