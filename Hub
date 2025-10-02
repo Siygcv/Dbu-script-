@@ -9,21 +9,21 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Configuration des couleurs modernes
 local Theme = {
-    Primary = Color3.fromRGB(139, 92, 246),
-    Secondary = Color3.fromRGB(236, 72, 153),
-    Accent = Color3.fromRGB(34, 211, 238),
-    Success = Color3.fromRGB(16, 185, 129),
+    Primary = Color3.fromRGB(34, 197, 94),   -- Vert vif
+    Secondary = Color3.fromRGB(5, 150, 105), -- Vert foncé/émeraude
+    Accent = Color3.fromRGB(132, 204, 22),   -- Vert lime pour contraste
+    Success = Color3.fromRGB(16, 185, 129),  -- Vert succès (déjà bon)
     
-    Background = Color3.fromRGB(10, 10, 15),
-    Surface = Color3.fromRGB(17, 17, 24),
-    SurfaceLight = Color3.fromRGB(24, 24, 32),
+    Background = Color3.fromRGB(10, 12, 10),     -- Noir/vert très foncé
+    Surface = Color3.fromRGB(15, 20, 15),        -- Surface sombre
+    SurfaceLight = Color3.fromRGB(22, 28, 22),   -- Légèrement plus clair
     
-    Text = Color3.fromRGB(240, 240, 245),
-    TextSecondary = Color3.fromRGB(156, 163, 175),
-    TextMuted = Color3.fromRGB(100, 100, 120),
+    Text = Color3.fromRGB(235, 245, 235),        -- Texte clair
+    TextSecondary = Color3.fromRGB(160, 175, 160), -- Texte secondaire gris-vert
+    TextMuted = Color3.fromRGB(110, 120, 110),     -- Texte atténué
     
-    Border = Color3.fromRGB(40, 40, 55),
-    Hover = Color3.fromRGB(30, 30, 42),
+    Border = Color3.fromRGB(40, 55, 40),        -- Bordures vert/gris foncé
+    Hover = Color3.fromRGB(30, 42, 30),         -- Effet hover sombre/vert
 }
 
 -- Utilitaires d'animation
