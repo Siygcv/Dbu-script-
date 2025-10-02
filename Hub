@@ -1189,7 +1189,7 @@ return Library
 
 --[[
 ╔════════════════════════════════════════════════════════════════╗
-║              WoW TEAM HUB V6.0 - ULTRA MODERN UI               ║
+║              WoW TEAM HUB V6.0 - ULTRA MODERN UI              ║
 ║                    EXEMPLE D'UTILISATION                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -1564,3 +1564,5 @@ PlayerTab:AddInput("Teleport to Player", "Username...", function(text)
     print("Téléportation vers:", text)
     -- Code de téléportation
 end)
+
+-- ═
