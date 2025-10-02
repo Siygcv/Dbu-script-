@@ -1,5 +1,5 @@
--- WoW Team Hub v6.0 - Ultra Modern UI (FIXED)
--- Design inspiré de: Glassmorphism, Neumorphism & Material Design 3
+-- WoW Team Hub v6.0 - Ultra Modern UI (REWORKED SAVE SYSTEM)
+-- Design: Glassmorphism, Neumorphism & Material Design 3
 
 local Library = {}
 local TweenService = game:GetService("TweenService")
@@ -7,71 +7,59 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
-local SAVE_FILE = "WoWTeamHub_Settings.json"  -- Nom du fichier (adapté à votre script)
-local savedStates = {}
 
--- Load states (robuste)
+-- SYSTÈME DE SAUVEGARDE GLOBAL
+local SAVE_FILE = "WoWTeamHub_Settings.json"
+_G.savedStates = _G.savedStates or {}
+
+-- Chargement automatique au démarrage
 local function loadStates()
-    ensureSavedStates()
-    if type(isfile) == "function" and isfile(SAVE_FILE) then
-        local ok, data = pcall(readfile, SAVE_FILE)
-        if not ok or type(data) ~= "string" then
-            warn("[WoWTeamHub] Impossible de lire le fichier de settings ou contenu invalide.")
-            return
-        end
-
-        local decodedOk, decoded = pcall(function()
-            return HttpService:JSONDecode(data)
-        end)
-
-        if decodedOk and type(decoded) == "table" then
-            savedStates = decoded
-            ensureSavedStates()
-        else
-            warn("[WoWTeamHub] JSON invalide dans " .. SAVE_FILE .. ". Réinitialisation des settings.")
-            savedStates = {}
+    if isfile and readfile and isfile(SAVE_FILE) then
+        local success, data = pcall(readfile, SAVE_FILE)
+        if success then
+            local ok, decoded = pcall(HttpService.JSONDecode, HttpService, data)
+            if ok and type(decoded) == "table" then
+                _G.savedStates = decoded
+                print("[WoW Hub] États chargés:", #decoded, "entrées")
+            end
         end
     end
 end
 
--- Save states (robuste)
+-- Sauvegarde automatique
 local function saveStates()
-    ensureSavedStates()
-    if type(writefile) ~= "function" then
-        -- En environnement sans writefile, on ne peut pas sauvegarder; log pour debug
-        warn("[WoWTeamHub] writefile non disponible, impossible de sauvegarder les settings.")
-        return
-    end
-
-    local ok, err = pcall(function()
-        local encoded = HttpService:JSONEncode(savedStates or {})
-        writefile(SAVE_FILE, encoded)
-    end)
-
-    if not ok then
-        warn("[WoWTeamHub] Erreur lors de la sauvegarde: " .. tostring(err))
+    if writefile then
+        local success, err = pcall(function()
+            writefile(SAVE_FILE, HttpService:JSONEncode(_G.savedStates))
+        end)
+        if success then
+            print("[WoW Hub] États sauvegardés")
+        else
+            warn("[WoW Hub] Erreur sauvegarde:", err)
+        end
     end
 end
 
--- Charger initialement
+-- Chargement initial
 loadStates()
+
 -- Configuration des couleurs modernes
 local Theme = {
-    Primary = Color3.fromRGB(34, 197, 94),   -- Vert vif
-    Secondary = Color3.fromRGB(5, 150, 105), -- Vert foncé/émeraude
-    Accent = Color3.fromRGB(132, 204, 22),   -- Vert lime pour contraste
-    Success = Color3.fromRGB(16, 185, 129),  -- Vert succès (déjà bon)
+    Primary = Color3.fromRGB(34, 197, 94),
+    Secondary = Color3.fromRGB(5, 150, 105),
+    Accent = Color3.fromRGB(132, 204, 22),
+    Success = Color3.fromRGB(16, 185, 129),
     
-    Background = Color3.fromRGB(10, 12, 10),     -- Noir/vert très foncé
-    Surface = Color3.fromRGB(15, 20, 15),        -- Surface sombre
-    SurfaceLight = Color3.fromRGB(22, 28, 22),   -- Légèrement plus clair
+    Background = Color3.fromRGB(10, 12, 10),
+    Surface = Color3.fromRGB(15, 20, 15),
+    SurfaceLight = Color3.fromRGB(22, 28, 22),
     
-    Text = Color3.fromRGB(235, 245, 235),        -- Texte clair
-    TextSecondary = Color3.fromRGB(160, 175, 160), -- Texte secondaire gris-vert
-    TextMuted = Color3.fromRGB(110, 120, 110),     -- Texte atténué
+    Text = Color3.fromRGB(235, 245, 235),
+    TextSecondary = Color3.fromRGB(160, 175, 160),
+    TextMuted = Color3.fromRGB(110, 120, 110),
     
-    Border = Color3.fromRGB(40, 55, 40),        -- Bordures vert/gris foncé
-    Hover = Color3.fromRGB(30, 42, 30),         -- Effet hover sombre/vert
+    Border = Color3.fromRGB(40, 55, 40),
+    Hover = Color3.fromRGB(30, 42, 30),
 }
 
 -- Utilitaires d'animation
@@ -155,14 +143,12 @@ function Library:CreateWindow(title)
     MainFrame.Size = UDim2.new(0, 0, 0, 0)
     MainFrame.ClipsDescendants = true
     
-    -- Animation d'ouverture
     Spring(MainFrame, {Size = UDim2.new(0, 600, 0, 450)}, 0.6)
     
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 20)
     MainCorner.Parent = MainFrame
     
-    -- Bordure
     local BorderStroke = Instance.new("UIStroke")
     BorderStroke.Parent = MainFrame
     BorderStroke.Color = Theme.Primary
@@ -170,7 +156,6 @@ function Library:CreateWindow(title)
     BorderStroke.Transparency = 0.5
     BorderStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     
-    -- Shadow
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
     Shadow.Parent = MainFrame
@@ -259,7 +244,7 @@ function Library:CreateWindow(title)
     VersionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     VersionLabel.TextSize = 10
     
-    -- Boutons (Container)
+    -- Boutons
     local ButtonContainer = Instance.new("Frame")
     ButtonContainer.Parent = TopBar
     ButtonContainer.BackgroundTransparency = 1
@@ -272,7 +257,6 @@ function Library:CreateWindow(title)
     ButtonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     ButtonLayout.Padding = UDim.new(0, 8)
     
-    -- Minimize Button
     local MinimizeBtn = Instance.new("TextButton")
     MinimizeBtn.Name = "MinimizeBtn"
     MinimizeBtn.Parent = ButtonContainer
@@ -288,8 +272,6 @@ function Library:CreateWindow(title)
     local MinCorner = Instance.new("UICorner")
     MinCorner.CornerRadius = UDim.new(0, 8)
     MinCorner.Parent = MinimizeBtn
-    
-
     
     -- Content Wrapper
     local ContentWrapper = Instance.new("Frame")
@@ -346,7 +328,7 @@ function Library:CreateWindow(title)
     ContentCorner.CornerRadius = UDim.new(0, 12)
     ContentCorner.Parent = ContentContainer
     
-    -- Minimize/Close Logic
+    -- Minimize Logic
     local minimized = false
     local originalSize = UDim2.new(0, 600, 0, 450)
     
@@ -361,8 +343,6 @@ function Library:CreateWindow(title)
         end
     end)
     
-    
-    -- Hover Effects
     MinimizeBtn.MouseEnter:Connect(function()
         Tween(MinimizeBtn, {BackgroundColor3 = Theme.Hover}, 0.2)
     end)
@@ -371,7 +351,6 @@ function Library:CreateWindow(title)
         Tween(MinimizeBtn, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
     end)
     
-    -- Dragging
     MakeDraggable(MainFrame, TopBar)
     
     -- CreateTab Function
@@ -379,7 +358,6 @@ function Library:CreateWindow(title)
         local TabManager = {}
         TabManager.Elements = {}
         
-        -- Tab Button
         local TabButton = Instance.new("TextButton")
         TabButton.Name = name
         TabButton.Parent = Sidebar
@@ -397,7 +375,6 @@ function Library:CreateWindow(title)
         TabCorner.CornerRadius = UDim.new(0, 10)
         TabCorner.Parent = TabButton
         
-        -- Active Indicator
         local ActiveIndicator = Instance.new("Frame")
         ActiveIndicator.Name = "ActiveIndicator"
         ActiveIndicator.Parent = TabButton
@@ -410,7 +387,6 @@ function Library:CreateWindow(title)
         IndicatorCorner.CornerRadius = UDim.new(0, 10)
         IndicatorCorner.Parent = ActiveIndicator
         
-        -- Tab Content
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Name = name .. "Content"
         TabContent.Parent = ContentContainer
@@ -439,7 +415,6 @@ function Library:CreateWindow(title)
         ContentPadding.PaddingRight = UDim.new(0, 15)
         ContentPadding.PaddingBottom = UDim.new(0, 15)
         
-        -- Tab Selection
         TabButton.MouseButton1Click:Connect(function()
             for _, tab in pairs(WindowManager.Tabs) do
                 Tween(tab.Button, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
@@ -458,7 +433,6 @@ function Library:CreateWindow(title)
             WindowManager.CurrentTab = TabManager
         end)
         
-        -- Hover
         TabButton.MouseEnter:Connect(function()
             if TabButton.TextColor3 ~= Theme.Primary then
                 Tween(TabButton, {BackgroundColor3 = Theme.Hover}, 0.2)
@@ -473,7 +447,6 @@ function Library:CreateWindow(title)
         
         table.insert(WindowManager.Tabs, {Button = TabButton, Content = TabContent, Manager = TabManager})
         
-        -- Auto-select first tab
         if #WindowManager.Tabs == 1 then
             Tween(TabButton, {BackgroundColor3 = Theme.Hover}, 0.2)
             Tween(TabButton, {TextColor3 = Theme.Primary}, 0.2)
@@ -482,7 +455,91 @@ function Library:CreateWindow(title)
             WindowManager.CurrentTab = TabManager
         end
         
-        -- Add Button
+        -- TOGGLE (SYSTÈME AMÉLIORÉ)
+        function TabManager:AddToggle(text, default, callback)
+            local toggled = default or false
+            
+            -- Chargement de l'état sauvegardé
+            if _G.savedStates[text] ~= nil then
+                toggled = _G.savedStates[text]
+            end
+            
+            local ToggleFrame = Instance.new("Frame")
+            ToggleFrame.Name = text
+            ToggleFrame.Parent = TabContent
+            ToggleFrame.BackgroundColor3 = Theme.SurfaceLight
+            ToggleFrame.BorderSizePixel = 0
+            ToggleFrame.Size = UDim2.new(1, 0, 0, 44)
+            
+            local ToggleCorner = Instance.new("UICorner")
+            ToggleCorner.CornerRadius = UDim.new(0, 10)
+            ToggleCorner.Parent = ToggleFrame
+            
+            local Label = Instance.new("TextLabel")
+            Label.Parent = ToggleFrame
+            Label.BackgroundTransparency = 1
+            Label.Position = UDim2.new(0, 15, 0, 0)
+            Label.Size = UDim2.new(1, -80, 1, 0)
+            Label.Font = Enum.Font.GothamSemibold
+            Label.Text = text
+            Label.TextColor3 = Theme.Text
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            
+            local ToggleButton = Instance.new("TextButton")
+            ToggleButton.Parent = ToggleFrame
+            ToggleButton.BackgroundColor3 = toggled and Theme.Primary or Theme.Border
+            ToggleButton.BorderSizePixel = 0
+            ToggleButton.Position = UDim2.new(1, -55, 0.5, -12)
+            ToggleButton.Size = UDim2.new(0, 48, 0, 24)
+            ToggleButton.Text = ""
+            ToggleButton.AutoButtonColor = false
+            
+            local ToggleBtnCorner = Instance.new("UICorner")
+            ToggleBtnCorner.CornerRadius = UDim.new(1, 0)
+            ToggleBtnCorner.Parent = ToggleButton
+            
+            local ToggleCircle = Instance.new("Frame")
+            ToggleCircle.Parent = ToggleButton
+            ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ToggleCircle.BorderSizePixel = 0
+            ToggleCircle.Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
+            ToggleCircle.Size = UDim2.new(0, 20, 0, 20)
+            
+            local CircleCorner = Instance.new("UICorner")
+            CircleCorner.CornerRadius = UDim.new(1, 0)
+            CircleCorner.Parent = ToggleCircle
+            
+            -- Application de l'état initial
+            if toggled then
+                pcall(callback, toggled)
+            end
+            
+            ToggleButton.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                
+                Spring(ToggleButton, {BackgroundColor3 = toggled and Theme.Primary or Theme.Border}, 0.3)
+                Spring(ToggleCircle, {Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)}, 0.3)
+                
+                -- Sauvegarde automatique
+                _G.savedStates[text] = toggled
+                saveStates()
+                
+                pcall(callback, toggled)
+            end)
+            
+            ToggleFrame.MouseEnter:Connect(function()
+                Tween(ToggleFrame, {BackgroundColor3 = Theme.Hover}, 0.2)
+            end)
+            
+            ToggleFrame.MouseLeave:Connect(function()
+                Tween(ToggleFrame, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
+            end)
+            
+            return ToggleFrame
+        end
+        
+        -- BUTTON
         function TabManager:AddButton(text, callback)
             local Button = Instance.new("TextButton")
             Button.Name = text
@@ -518,92 +575,7 @@ function Library:CreateWindow(title)
             return Button
         end
         
-function TabManager:AddToggle(text, default, callback)
-    ensureSavedStates() -- s'assure que savedStates est une table
-
-    local toggled = default or false
-
-    -- lecture sûre de la valeur sauvegardée
-    if type(savedStates[text]) == "boolean" then
-        toggled = savedStates[text]
-    end
-
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Name = text
-    ToggleFrame.Parent = TabContent
-    ToggleFrame.BackgroundColor3 = Theme.SurfaceLight
-    ToggleFrame.BorderSizePixel = 0
-    ToggleFrame.Size = UDim2.new(1, 0, 0, 44)
-
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 10)
-    ToggleCorner.Parent = ToggleFrame
-
-    local Label = Instance.new("TextLabel")
-    Label.Parent = ToggleFrame
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 15, 0, 0)
-    Label.Size = UDim2.new(1, -80, 1, 0)
-    Label.Font = Enum.Font.GothamSemibold
-    Label.Text = text
-    Label.TextColor3 = Theme.Text
-    Label.TextSize = 14
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Parent = ToggleFrame
-    ToggleButton.BackgroundColor3 = toggled and Theme.Primary or Theme.Border
-    ToggleButton.BorderSizePixel = 0
-    ToggleButton.Position = UDim2.new(1, -55, 0.5, -12)
-    ToggleButton.Size = UDim2.new(0, 48, 0, 24)
-    ToggleButton.Text = ""
-    ToggleButton.AutoButtonColor = false
-
-    local ToggleBtnCorner = Instance.new("UICorner")
-    ToggleBtnCorner.CornerRadius = UDim.new(1, 0)
-    ToggleBtnCorner.Parent = ToggleButton
-
-    local ToggleCircle = Instance.new("Frame")
-    ToggleCircle.Parent = ToggleButton
-    ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleCircle.BorderSizePixel = 0
-    ToggleCircle.Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
-    ToggleCircle.Size = UDim2.new(0, 20, 0, 20)
-
-    local CircleCorner = Instance.new("UICorner")
-    CircleCorner.CornerRadius = UDim.new(1, 0)
-    CircleCorner.Parent = ToggleCircle
-
-    -- clique : inverse et sauvegarde
-    ToggleButton.MouseButton1Click:Connect(function()
-        toggled = not toggled
-
-        Spring(ToggleButton, {BackgroundColor3 = toggled and Theme.Primary or Theme.Border}, 0.3)
-        Spring(ToggleCircle, {Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)}, 0.3)
-
-        ensureSavedStates()
-        savedStates[text] = toggled
-        saveStates()
-
-        pcall(callback, toggled)
-    end)
-
-    -- appeler callback une fois au démarrage pour appliquer l'état initial
-    pcall(callback, toggled)
-
-    ToggleFrame.MouseEnter:Connect(function()
-        Tween(ToggleFrame, {BackgroundColor3 = Theme.Hover}, 0.2)
-    end)
-
-    ToggleFrame.MouseLeave:Connect(function()
-        Tween(ToggleFrame, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
-    end)
-
-    return ToggleFrame
-end
-
-        
-        -- Add Slider
+        -- SLIDER
         function TabManager:AddSlider(text, min, max, default, callback)
             local value = default or min
             
@@ -714,7 +686,7 @@ end
             return SliderFrame
         end
         
-        -- Add Dropdown
+        -- DROPDOWN
         function TabManager:AddDropdown(text, options, callback)
             local selected = options[1] or "None"
             local opened = false
@@ -835,7 +807,7 @@ end
             return DropdownFrame
         end
         
-        -- Add Label
+        -- LABEL
         function TabManager:AddLabel(text)
             local Label = Instance.new("TextLabel")
             Label.Parent = TabContent
@@ -850,7 +822,7 @@ end
             return Label
         end
         
-        -- Add Paragraph
+        -- PARAGRAPH
         function TabManager:AddParagraph(title, content)
             local ParagraphFrame = Instance.new("Frame")
             ParagraphFrame.Name = title
@@ -908,7 +880,7 @@ end
             return ParagraphFrame
         end
         
-        -- Add Input
+        -- INPUT
         function TabManager:AddInput(text, placeholder, callback)
             local InputFrame = Instance.new("Frame")
             InputFrame.Name = text
@@ -984,7 +956,7 @@ end
             return InputFrame
         end
         
-        -- Add Keybind
+        -- KEYBIND
         function TabManager:AddKeybind(text, defaultKey, callback)
             local currentKey = defaultKey or Enum.KeyCode.E
             local waitingForKey = false
@@ -1063,59 +1035,50 @@ end
     
     return WindowManager
 end
+
 return Library
-
-
--- Exposer une API simple pour que le code externe puisse lire/écrire l'état des toggles
-function Library.IsEnabled(name)
-    return type(savedStates) == "table" and savedStates[name] == true
-end
-
-function Library.SetState(name, value)
-    ensureSavedStates()
-    savedStates[name] = value and true or false
-    saveStates()
-end
-
--- rendre la table accessible (optionnel, pratique)
-Library.savedStates = savedStates
-
-
-
 
 --[[
 ═══════════════════════════════════════════════════════════════
-                    EXEMPLE D'UTILISATION
+              EXEMPLE D'UTILISATION COMPLET
 ═══════════════════════════════════════════════════════════════
 
-local Library = loadstring(game:HttpGet("URL_DU_SCRIPT"))()
+local Library = loadstring(game:HttpGet("URL"))()
 local Window = Library:CreateWindow("WoW Team Hub v6.0")
 
--- Créer des onglets
 local MainTab = Window:CreateTab("Main")
 local PlayerTab = Window:CreateTab("Player")
-local SettingsTab = Window:CreateTab("Settings")
 
--- Ajouter des éléments
-MainTab:AddLabel("🎮 Actions Principales")
-
-MainTab:AddButton("Kill All", function()
-    print("Kill All activé!")
-end)
-
+-- Toggle avec sauvegarde automatique
 MainTab:AddToggle("Auto Farm", false, function(state)
     print("Auto Farm:", state)
+    -- L'état est automatiquement sauvegardé
 end)
 
-MainTab:AddSlider("Walk Speed", 16, 200, 16, function(value)
+-- Vérifier l'état dans une autre fonction
+spawn(function()
+    while wait(1) do
+        if _G.savedStates["Auto Farm"] then
+            print("Auto Farm est activé!")
+            -- Votre code d'auto farm ici
+        end
+    end
+end)
+
+-- Autres exemples d'éléments
+MainTab:AddButton("Kill All", function()
+    print("Kill All!")
+end)
+
+MainTab:AddSlider("Walk Speed", 16, 200, 50, function(value)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
 end)
 
-MainTab:AddDropdown("Team", {"Red", "Blue", "Green"}, function(selected)
-    print("Team:", selected)
+MainTab:AddDropdown("Team", {"Red", "Blue", "Green"}, function(team)
+    print("Team:", team)
 end)
 
-PlayerTab:AddInput("Username", "Entrez un nom...", function(text)
+PlayerTab:AddInput("Username", "Entrez un nom", function(text)
     print("Username:", text)
 end)
 
@@ -1123,7 +1086,9 @@ PlayerTab:AddKeybind("Toggle UI", Enum.KeyCode.RightShift, function()
     print("UI Toggle!")
 end)
 
-SettingsTab:AddParagraph("À propos", "WoW Team Hub v6.0 - Interface ultra-moderne!")
+-- ACCÈS DIRECT AUX ÉTATS SAUVEGARDÉS:
+-- _G.savedStates["Auto Farm"] -> true/false
+-- _G.savedStates["Nom du Toggle"] -> true/false
 
 ═══════════════════════════════════════════════════════════════
 ]]
