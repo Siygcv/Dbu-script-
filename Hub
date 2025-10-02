@@ -10,13 +10,6 @@ local HttpService = game:GetService("HttpService")
 local SAVE_FILE = "WoWTeamHub_Settings.json"  -- Nom du fichier (adapté à votre script)
 local savedStates = {}
 
--- Ensure savedStates is always a table
-local function ensureSavedStates()
-    if type(savedStates) ~= "table" then
-        savedStates = {}
-    end
-end
-
 -- Load states (robuste)
 local function loadStates()
     ensureSavedStates()
@@ -525,27 +518,27 @@ function Library:CreateWindow(title)
             return Button
         end
         
--- Add Toggle (Version Corrigée avec Sauvegarde)
 function TabManager:AddToggle(text, default, callback)
     ensureSavedStates() -- s'assure que savedStates est une table
 
     local toggled = default or false
 
+    -- lecture sûre de la valeur sauvegardée
     if type(savedStates[text]) == "boolean" then
         toggled = savedStates[text]
     end
-    
+
     local ToggleFrame = Instance.new("Frame")
     ToggleFrame.Name = text
     ToggleFrame.Parent = TabContent
     ToggleFrame.BackgroundColor3 = Theme.SurfaceLight
     ToggleFrame.BorderSizePixel = 0
     ToggleFrame.Size = UDim2.new(1, 0, 0, 44)
-    
+
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 10)
     ToggleCorner.Parent = ToggleFrame
-    
+
     local Label = Instance.new("TextLabel")
     Label.Parent = ToggleFrame
     Label.BackgroundTransparency = 1
@@ -556,7 +549,7 @@ function TabManager:AddToggle(text, default, callback)
     Label.TextColor3 = Theme.Text
     Label.TextSize = 14
     Label.TextXAlignment = Enum.TextXAlignment.Left
-    
+
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ToggleFrame
     ToggleButton.BackgroundColor3 = toggled and Theme.Primary or Theme.Border
@@ -565,30 +558,29 @@ function TabManager:AddToggle(text, default, callback)
     ToggleButton.Size = UDim2.new(0, 48, 0, 24)
     ToggleButton.Text = ""
     ToggleButton.AutoButtonColor = false
-    
+
     local ToggleBtnCorner = Instance.new("UICorner")
     ToggleBtnCorner.CornerRadius = UDim.new(1, 0)
     ToggleBtnCorner.Parent = ToggleButton
-    
+
     local ToggleCircle = Instance.new("Frame")
     ToggleCircle.Parent = ToggleButton
     ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     ToggleCircle.BorderSizePixel = 0
     ToggleCircle.Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
     ToggleCircle.Size = UDim2.new(0, 20, 0, 20)
-    
+
     local CircleCorner = Instance.new("UICorner")
     CircleCorner.CornerRadius = UDim.new(1, 0)
     CircleCorner.Parent = ToggleCircle
-    
+
+    -- clique : inverse et sauvegarde
     ToggleButton.MouseButton1Click:Connect(function()
         toggled = not toggled
 
-        -- animations
         Spring(ToggleButton, {BackgroundColor3 = toggled and Theme.Primary or Theme.Border}, 0.3)
         Spring(ToggleCircle, {Position = toggled and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)}, 0.3)
 
-        -- Sauvegarde automatique de l'état — safe assign
         ensureSavedStates()
         savedStates[text] = toggled
         saveStates()
@@ -596,18 +588,20 @@ function TabManager:AddToggle(text, default, callback)
         pcall(callback, toggled)
     end)
 
-    
-    -- Effets hover sur le frame principal
+    -- appeler callback une fois au démarrage pour appliquer l'état initial
+    pcall(callback, toggled)
+
     ToggleFrame.MouseEnter:Connect(function()
         Tween(ToggleFrame, {BackgroundColor3 = Theme.Hover}, 0.2)
     end)
-    
+
     ToggleFrame.MouseLeave:Connect(function()
         Tween(ToggleFrame, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
     end)
-    
-   return ToggleFrame
+
+    return ToggleFrame
 end
+
         
         -- Add Slider
         function TabManager:AddSlider(text, min, max, default, callback)
@@ -1070,6 +1064,24 @@ end
     return WindowManager
 end
 return Library
+
+
+-- Exposer une API simple pour que le code externe puisse lire/écrire l'état des toggles
+function Library.IsEnabled(name)
+    return type(savedStates) == "table" and savedStates[name] == true
+end
+
+function Library.SetState(name, value)
+    ensureSavedStates()
+    savedStates[name] = value and true or false
+    saveStates()
+end
+
+-- rendre la table accessible (optionnel, pratique)
+Library.savedStates = savedStates
+
+
+
 
 --[[
 ═══════════════════════════════════════════════════════════════
