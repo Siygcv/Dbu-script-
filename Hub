@@ -8,30 +8,61 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 local SAVE_FILE = "WoWTeamHub_Settings.json"  -- Nom du fichier (adapté à votre script)
+local SAVE_FILE = "WoWTeamHub_Settings.json"
 local savedStates = {}
 
--- Chargement des états sauvegardés
-if isfile and isfile(SAVE_FILE) then
-    local success, data = pcall(readfile, SAVE_FILE)
-    if success then
-        local ok, decoded = pcall(HttpService.JSONDecode, HttpService, data)
-        if ok and type(decoded) == "table" then
+-- Ensure savedStates is always a table
+local function ensureSavedStates()
+    if type(savedStates) ~= "table" then
+        savedStates = {}
+    end
+end
+
+-- Load states (robuste)
+local function loadStates()
+    ensureSavedStates()
+    if type(isfile) == "function" and isfile(SAVE_FILE) then
+        local ok, data = pcall(readfile, SAVE_FILE)
+        if not ok or type(data) ~= "string" then
+            warn("[WoWTeamHub] Impossible de lire le fichier de settings ou contenu invalide.")
+            return
+        end
+
+        local decodedOk, decoded = pcall(function()
+            return HttpService:JSONDecode(data)
+        end)
+
+        if decodedOk and type(decoded) == "table" then
             savedStates = decoded
+            ensureSavedStates()
+        else
+            warn("[WoWTeamHub] JSON invalide dans " .. SAVE_FILE .. ". Réinitialisation des settings.")
+            savedStates = {}
         end
     end
 end
 
--- Fonction de sauvegarde
+-- Save states (robuste)
 local function saveStates()
-    if writefile then
-        local success, err = pcall(function()
-            writefile(SAVE_FILE, HttpService:JSONEncode(savedStates))
-        end)
-        if not success then
-            warn("Erreur lors de la sauvegarde : " .. tostring(err))  -- Optionnel : log d'erreur
-        end
+    ensureSavedStates()
+    if type(writefile) ~= "function" then
+        -- En environnement sans writefile, on ne peut pas sauvegarder; log pour debug
+        warn("[WoWTeamHub] writefile non disponible, impossible de sauvegarder les settings.")
+        return
+    end
+
+    local ok, err = pcall(function()
+        local encoded = HttpService:JSONEncode(savedStates or {})
+        writefile(SAVE_FILE, encoded)
+    end)
+
+    if not ok then
+        warn("[WoWTeamHub] Erreur lors de la sauvegarde: " .. tostring(err))
     end
 end
+
+-- Charger initialement
+loadStates()
 -- Configuration des couleurs modernes
 local Theme = {
     Primary = Color3.fromRGB(34, 197, 94),   -- Vert vif
