@@ -6,7 +6,32 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local SAVE_FILE = "WoWTeamHub_Settings.json"  -- Nom du fichier (adapté à votre script)
+local savedStates = {}
 
+-- Chargement des états sauvegardés
+if isfile and isfile(SAVE_FILE) then
+    local success, data = pcall(readfile, SAVE_FILE)
+    if success then
+        local ok, decoded = pcall(HttpService.JSONDecode, HttpService, data)
+        if ok and type(decoded) == "table" then
+            savedStates = decoded
+        end
+    end
+end
+
+-- Fonction de sauvegarde
+local function saveStates()
+    if writefile then
+        local success, err = pcall(function()
+            writefile(SAVE_FILE, HttpService:JSONEncode(savedStates))
+        end)
+        if not success then
+            warn("Erreur lors de la sauvegarde : " .. tostring(err))  -- Optionnel : log d'erreur
+        end
+    end
+end
 -- Configuration des couleurs modernes
 local Theme = {
     Primary = Color3.fromRGB(34, 197, 94),   -- Vert vif
@@ -1013,34 +1038,6 @@ end
     
     return WindowManager
 end
-
-local HttpService = game:GetService("HttpService")
-local SAVE_FILE = "WoWTeamHub_Settings.json"  -- Nom du fichier (adapté à votre script)
-local savedStates = {}
-
--- Chargement des états sauvegardés
-if isfile and isfile(SAVE_FILE) then
-    local success, data = pcall(readfile, SAVE_FILE)
-    if success then
-        local ok, decoded = pcall(HttpService.JSONDecode, HttpService, data)
-        if ok and type(decoded) == "table" then
-            savedStates = decoded
-        end
-    end
-end
-
--- Fonction de sauvegarde
-local function saveStates()
-    if writefile then
-        local success, err = pcall(function()
-            writefile(SAVE_FILE, HttpService:JSONEncode(savedStates))
-        end)
-        if not success then
-            warn("Erreur lors de la sauvegarde : " .. tostring(err))  -- Optionnel : log d'erreur
-        end
-    end
-end
-
 return Library
 
 --[[
