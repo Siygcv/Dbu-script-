@@ -241,22 +241,7 @@ function Library:CreateWindow(title)
     MinCorner.CornerRadius = UDim.new(0, 8)
     MinCorner.Parent = MinimizeBtn
     
-    -- Close Button
-    local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Name = "CloseBtn"
-    CloseBtn.Parent = ButtonContainer
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-    CloseBtn.BorderSizePixel = 0
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.Text = "×"
-    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CloseBtn.TextSize = 20
-    CloseBtn.AutoButtonColor = false
-    
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 8)
-    CloseCorner.Parent = CloseBtn
+
     
     -- Content Wrapper
     local ContentWrapper = Instance.new("Frame")
@@ -328,11 +313,6 @@ function Library:CreateWindow(title)
         end
     end)
     
-    CloseBtn.MouseButton1Click:Connect(function()
-        Spring(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.4)
-        wait(0.4)
-        ScreenGui:Destroy()
-    end)
     
     -- Hover Effects
     MinimizeBtn.MouseEnter:Connect(function()
@@ -341,14 +321,6 @@ function Library:CreateWindow(title)
     
     MinimizeBtn.MouseLeave:Connect(function()
         Tween(MinimizeBtn, {BackgroundColor3 = Theme.SurfaceLight}, 0.2)
-    end)
-    
-    CloseBtn.MouseEnter:Connect(function()
-        Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(248, 113, 113)}, 0.2)
-    end)
-    
-    CloseBtn.MouseLeave:Connect(function()
-        Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(239, 68, 68)}, 0.2)
     end)
     
     -- Dragging
